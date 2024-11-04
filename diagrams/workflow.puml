@@ -1,0 +1,30 @@
+@startuml School Map Update Workflow
+actor User as "School Representative"
+actor Admin as "TTT Staff"
+participant "Fillout" as Form
+participant "AirTable (Database)" as AirTable
+participant "Mapbox Geocoding" as MapboxGeocode
+participant "Map Update Routine" as MapUpdate
+participant "Mapbox Map" as MapboxMap
+
+== School Registration ==
+User -> Form: Submit registration form
+Form -> AirTable: Create new record in "Schools" with school address
+
+== Geocode Address ==
+AirTable -> MapboxGeocode: Request geocoding for address
+MapboxGeocode -> AirTable: Return latitude and longitude
+AirTable -> AirTable: Update school record with lat/long
+
+== Update Geocode ==
+Admin -> AirTable: Update school address
+AirTable -> MapboxGeocode: Request geocoding for address
+MapboxGeocode -> AirTable: Return latitude and longitude
+AirTable -> AirTable: Update school record with lat/long
+
+== Weekly Map Update (Fridays @ 10:30pm) ==
+MapUpdate -> AirTable: Retrieve list of all schools and coordinates
+AirTable -> MapUpdate: Return school data
+MapUpdate -> MapboxMap: Update map pins based on school data (add, remove, update)
+
+@enduml

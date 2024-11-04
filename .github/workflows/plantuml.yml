@@ -1,0 +1,74 @@
+name: Generate PlantUML Diagrams
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'diagrams/*.puml' # Only trigger on changes to .puml files
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'diagrams/*.puml' # Only trigger on changes to .puml files
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Install PlantUML and Graphviz
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y plantuml graphviz
+
+    - name: List PUML files (Debugging Step)
+      run: |
+        find diagrams/ -name '*.puml'
+
+    - name: Confirm .puml Files Exist (Debugging Step)
+      run: |
+        if ! compgen -G "diagrams/*.puml" > /dev/null; then
+          echo "No .puml files found to generate diagrams."
+          exit 1
+        fi
+
+    - name: Generate Diagrams
+      run: |
+        plantuml -tpng diagrams/*.puml -o png/
+
+    - name: Check Generated PNGs (Debugging Step)
+      run: |
+        ls -l diagrams/png/*.png || echo "No .png files generated."
+
+    - name: Commit and Push Diagrams
+      run: |
+        if ls diagrams/png/*.png 1> /dev/null 2>&1; then
+          # Configure git user
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          
+          # Stage all PNG files (new and modified)
+          git add diagrams/png/*.png
+          
+          # Check if there are any staged changes
+          if git diff --cached --exit-code; then
+            echo "No changes in diagrams. Skipping commit."
+          else
+            git commit -m "Add or update generated PlantUML diagrams"
+            git push
+          fi
+        else
+          echo "No .png files generated."
+        fi
