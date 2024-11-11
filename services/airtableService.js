@@ -3,8 +3,8 @@ const airtable = require('airtable');
 const base = new airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE);
 
 // Airtable mappings
-const schoolsTable = process.envprocess.env.AIRTABLE_SCHOOLS_TABLE;
-const activeView = process.envprocess.env.AIRTABLE_ACTIVE_VIEW;
+const schoolsTable = process.env.AIRTABLE_SCHOOLS_TABLE;
+const activeView = process.env.AIRTABLE_ACTIVE_VIEW;
 
 async function fetchSchools() {
     const schools = [];
