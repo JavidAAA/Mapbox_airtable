@@ -8,15 +8,21 @@ const logger = require('../utils/logger');
 Geoencode an address and return the coordinates.
 */
 router.post('/geocode', async (req, res) => {
+    logger.debug(`Raw request body: ${JSON.stringify(req.body)}`);
     const airtableData = req.body;
+    // Sanitize and validate fields
+    const schoolName = airtableData.schoolName && airtableData.schoolName.trim();
+    const address = airtableData.address && airtableData.address.trim();
 
-    // Validate input: schoolName and address must be present
-    if (!airtableData.schoolName || typeof airtableData.schoolName !== 'string' || airtableData.schoolName.trim() === "") {
-        res.status(400).send('Error: schoolName is required and cannot be empty.');
+    if (!schoolName || schoolName.toLowerCase() === 'null') {
+        logger.debug(`schoolName failed`)
+        res.status(400).send('Error: schoolName is required and cannot be empty or "null".');
         return;
     }
-    if (!airtableData.address || typeof airtableData.address !== 'string' || airtableData.address.trim() === "") {
-        res.status(400).send('Error: address is required and cannot be empty.');
+
+    if (!address || address === ', ,') {
+        logger.debug(`address failed`)
+        res.status(400).send('Error: address is required and cannot be empty or invalid.');
         return;
     }
 
