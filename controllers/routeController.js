@@ -9,6 +9,12 @@ Geoencode an address and return the coordinates.
 */
 router.post('/geocode', async (req, res) => {
     const airtableData = req.body;
+
+    if (!airtableData.schoolName) {
+        res.send('schoolName is required');
+        return;
+    }
+
     logger.debug(`Geocode endpoint called for ${airtableData.schoolName}`);
 
     const options = {
