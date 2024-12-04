@@ -16,13 +16,19 @@ router.post('/geocode', async (req, res) => {
 
     if (!schoolName || schoolName.toLowerCase() === 'null') {
         logger.debug(`schoolName failed`)
-        res.status(400).send('Error: schoolName is required and cannot be empty or "null".');
+        res.status(400).json({
+            error: 'InvalidInput',
+            message: 'schoolName is required and cannot be empty or "null".',
+        });
         return;
     }
 
     if (!address || address === ', ,') {
         logger.debug(`address failed`)
-        res.status(400).send('Error: address is required and cannot be empty or invalid.');
+        res.status(400).json({
+            error: 'InvalidInput',
+            message: 'address is required and cannot be empty or invalid.',
+        });
         return;
     }
 
@@ -34,13 +40,26 @@ router.post('/geocode', async (req, res) => {
         language: 'en',
         bbox: '-71.20445,42.98646,-66.84923,47.53167', // Bounding box for Maine - don't get places outside
     };
-    let geoCoordinates = await getCoordinates(airtableData.address, options);
-    if (geoCoordinates) {
-        logger.info(`Coordinates for ${airtableData.schoolName}: ${JSON.stringify(geoCoordinates)}`);
-        res.send(geoCoordinates);
-    } else {
-        logger.error(`Error during geocoding for ${airtableData.schoolName}`);
-        res.status(500).send(`Error fetching coordinates for ${airtableData.schoolName}`);
+
+    try {
+        let geoCoordinates = await getCoordinates(airtableData.address, options);
+
+        if (geoCoordinates) {
+            logger.info(`Coordinates for ${airtableData.schoolName}: ${JSON.stringify(geoCoordinates)}`);
+            res.send(geoCoordinates); // Always send JSON
+        } else {
+            logger.error(`Error during geocoding for ${airtableData.schoolName}`);
+            res.status(500).json({
+                error: 'GeocodingError',
+                message: `Unable to fetch coordinates for ${airtableData.schoolName}.`,
+            });
+        }
+    } catch (error) {
+        logger.error(`Unhandled error during geocoding: ${error.message}`);
+        res.status(500).json({
+            error: 'ServerError',
+            message: 'An unexpected error occurred during geocoding. Please try again later.',
+        });
     }
 });
 
