@@ -11,11 +11,11 @@ router.post('/geocode', async (req, res) => {
     const airtableData = req.body;
 
     // Validate input: schoolName and address must be present
-    if (!airtableData.schoolName || airtableData.schoolName.trim() === "") {
+    if (!airtableData.schoolName || typeof airtableData.schoolName !== 'string' || airtableData.schoolName.trim() === "") {
         res.status(400).send('Error: schoolName is required and cannot be empty.');
         return;
     }
-    if (!airtableData.address || airtableData.address.trim() === "") {
+    if (!airtableData.address || typeof airtableData.address !== 'string' || airtableData.address.trim() === "") {
         res.status(400).send('Error: address is required and cannot be empty.');
         return;
     }
@@ -33,7 +33,7 @@ router.post('/geocode', async (req, res) => {
         logger.info(`Coordinates for ${airtableData.schoolName}: ${JSON.stringify(geoCoordinates)}`);
         res.send(geoCoordinates);
     } else {
-        logger.error(`Error during geocoding for ${airtableData.schoolName}: ${error.message}`);
+        logger.error(`Error during geocoding for ${airtableData.schoolName}`);
         res.status(500).send(`Error fetching coordinates for ${airtableData.schoolName}`);
     }
 });
