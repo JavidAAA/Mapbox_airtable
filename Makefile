@@ -16,7 +16,13 @@ build:
 	docker buildx build -q -t $(IMAGE_NAME) .
 
 run: stop
-	docker run -d --network $(NETWORK_NAME) --name $(CONTAINER_NAME) -v ${HOST_DIR}/logs:/usr/src/app/logs $(IMAGE_NAME)
+	docker run -d \
+		--network $(NETWORK_NAME) \
+		--name $(CONTAINER_NAME) \
+		--log-opt max-size=30m \
+        --log-opt max-file=10 \
+		-v ${HOST_DIR}/logs:/usr/src/app/logs \
+		$(IMAGE_NAME)
 
 stop:
 	@echo "Checking if container $(CONTAINER_NAME) is running..."
